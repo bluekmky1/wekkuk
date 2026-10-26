@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: Tenada;
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2210-2@1.0/Tenada.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Figma raw colors. Semantic tokens have not been defined yet. */
+  --color-primary: #0074e1;
+  --color-secondary: #d31b9d;
+  --color-error: #dc2626;
+  --color-neutral-white: #ffffff;
+  --color-neutral-surface: #f3f3f3;
+  --color-neutral-border: #d9d9d9;
+  --color-neutral-muted: #a3a3a3;
+  --color-neutral-subtext: #444444;
+  --color-neutral-text: #000000;
+}
+
+html {
+  font-family: Pretendard, sans-serif;
+  color: var(--color-neutral-text);
+  background: var(--color-neutral-white);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.demo-stage {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--app-visual-top, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--app-visual-height, 100dvh);
+}
+
+.mobile-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-neutral-white);
+}
+
+.device-status-bar {
+  display: none;
+  flex: 0 0 44px;
+  background: var(--color-neutral-white);
+}
+
+.app-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-neutral-white);
+}
+
+.app-screen, .app-outgoing-screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-screen {
+  z-index: 2;
+  /* Also keeps fixed footers and toasts inside this screen while it moves. */
+  transform: translateZ(0);
+  background: var(--color-neutral-white);
+}
+
+.app-outgoing-screen {
+  pointer-events: none;
+}
+
+.app-scroll {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  outline: none;
+}
+
+.app-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.app-overlay-host {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.app-overlay-host > * {
+  pointer-events: auto;
+}
+
+.home-search-field {
+  background:
+    linear-gradient(var(--color-neutral-white), var(--color-neutral-white)) padding-box,
+    linear-gradient(110deg, var(--color-neutral-muted), var(--color-neutral-subtext)) border-box;
+}
+
+@media (min-width: 600px) and (hover: hover) and (pointer: fine) {
+  .demo-stage {
+    background: radial-gradient(ellipse at top, #f7f8fa, #e2e5eb);
+  }
+
+  .mobile-shell {
+    width: 404px;
+    max-width: calc(100vw - 48px);
+    height: min(858px, calc(var(--app-visual-height, 100dvh) - 48px));
+    border: 7px solid #202126;
+    border-radius: 38px;
+    box-shadow: 0 24px 64px #17203324, 0 3px 10px #17203320;
+  }
+
+  .device-status-bar {
+    display: block;
+  }
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin-inline: auto;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: var(--color-neutral-white);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bottom-sheet { animation: bottom-sheet-in 220ms ease-out both; }
+}
+
+@keyframes bottom-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
