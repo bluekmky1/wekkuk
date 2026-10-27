@@ -8,3 +8,5 @@ export { Dialog } from "./Dialog";
 export { Toast, EmptyState } from "./Feedback";
 export { CommentComposer, type CommentSubmission } from "./CommentComposer";
 export { Badge, SectionHeader, ListToolbar, SelectOptionList, AdBanner } from "./ListPrimitives";
+
+export { Divider } from "./Divider";

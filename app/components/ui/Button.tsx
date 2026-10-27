@@ -8,7 +8,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function Button({ variant = "primary", size = "md", fullWidth, className, type = "button", ...props }: ButtonProps) {
-  return <button {...props} type={type} className={cx("inline-flex items-center justify-center gap-2 rounded-lg px-4 text-body font-semibold disabled:cursor-not-allowed disabled:opacity-40", size === "sm" ? "min-h-8" : "min-h-11", fullWidth && "w-full", variant === "primary" ? "bg-neutral-text text-neutral-white" : variant === "outline" ? "border border-neutral-subtext bg-neutral-white text-neutral-subtext" : "text-neutral-subtext", className)} />;
+  return <button {...props} type={type} className={cx("inline-flex items-center justify-center gap-2 rounded-lg px-4 text-body font-semibold disabled:cursor-not-allowed disabled:opacity-40", size === "sm" ? "min-h-8" : "min-h-11", fullWidth && "w-full", variant === "primary" ? "bg-primary text-neutral-white" : variant === "outline" ? "border border-neutral-subtext bg-neutral-white text-neutral-subtext" : "text-neutral-subtext", className)} />;
 }
 
 export function IconButton({ label, size = "md", className, type = "button", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; size?: "sm" | "md" }) {

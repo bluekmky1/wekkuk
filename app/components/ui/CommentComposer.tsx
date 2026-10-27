@@ -19,7 +19,7 @@ export function CommentComposer({ disabled = false, onSubmit }: { disabled?: boo
   }
 
   return <footer className="fixed inset-x-0 bottom-0 z-30 w-full bg-neutral-border px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
-    {attachments.length > 0 && <div className="mb-2 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto">{attachments.map((name, index) => <span key={`${name}-${index}`} className="flex max-w-full items-center gap-1 rounded-lg bg-neutral-white pl-2 text-caption"><span className="truncate">{name}</span><IconButton label={`${name} 첨부 취소`} size="sm" onClick={() => setAttachments((items) => items.filter((_, itemIndex) => itemIndex !== index))}><X size={13} aria-hidden="true" /></IconButton></span>)}</div>}
+    {attachments.length > 0 && <div className="mb-2 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto">{attachments.map((name, index) => <span key={`${name}-${index}`} className="flex max-w-full items-center gap-1 rounded-lg bg-neutral-white pl-2 text-caption"><span className="truncate">{name}</span><IconButton label={`${name} 첨부 취소`} size="sm" onClick={() => setAttachments((items) => items.filter((_, itemIndex) => itemIndex !== index))}><X size={12} aria-hidden="true" /></IconButton></span>)}</div>}
     <form onSubmit={submit} className="flex items-center gap-2">
       <input ref={fileRef} type="file" multiple aria-label="댓글 파일 첨부" className="sr-only" disabled={disabled} onChange={(event) => setAttachments(Array.from(event.target.files ?? []).map((file) => file.name))} />
       <IconButton label="댓글 파일 첨부" size="sm" disabled={disabled} onClick={() => fileRef.current?.click()} className="text-neutral-subtext"><PlusCircle size={24} aria-hidden="true" /></IconButton>

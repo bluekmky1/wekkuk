@@ -1,72 +1,19 @@
-export const tournamentRules: { title: string; paragraphs?: string[]; bullets?: string[] }[] = [
-  {
-    title: "📌 경기 방법 안내",
-  },
-  {
-    title: "🎯 경기 방식",
-    bullets: [
-      "예선 경기는 랠리포인트 25점 1세트 경기로 진행되며, 듀스 없이 25점 선취 시 종료됩니다.",
-      "본선 풀리그는 랠리포인트 21점 1세트 경기로 진행되며, 듀스 없이 21점 선취 시 종료됩니다.",
-    ],
-    paragraphs: ["단, 상황에 따라 집행부 판단으로 변경될 수 있음을 안내드립니다."],
-  },
-  {
-    title: "🩹 부상 및 기권 처리",
-    bullets: [
-      "경기 중 부상으로 기권할 경우, 당시 점수 그대로 인정됩니다.",
-      "기권승 및 몰수 경기는 25:0으로 처리되며, 해당 팀은 예선 순위 산정에서 제외됩니다.",
-    ],
-  },
-  {
-    title: "🔄 예선 리그 운영",
-    bullets: [
-      "[광고에 가려진 부분] 할 수 있습니다.",
-      "예선 리그 종료 후, 본선 토너먼트 방식으로 진행됩니다.",
-    ],
-  },
-  {
-    title: "📊 본선 시드 배정 기준",
-    bullets: [
-      "각 조 1위 팀만 본선 진출 가능하며,",
-      "예선 성적(👉 다승 → 득실차 → 팀 합산 연령)에 따라 유리한 시드 순으로 배정됩니다.",
-      "부전승 자리가 있을 경우, 상위 성적 팀에 우선 배정됩니다.",
-    ],
-  },
-  {
-    title: "📈 예선 리그 순위 결정 기준",
-    bullets: [
-      "순위는 아래 순서에 따라 결정됩니다:",
-      "✅ 다승 → ✅ 승자승 → ✅ 득실차 → ✅ 다득점 → ✅ 팀 합산 연령",
-      "2팀이 동률인 경우: 승자승 우선 적용",
-      "3팀 이상 동률인 경우: 승자승 미적용, 👉 득실차 → 다득점 순",
-    ],
-  },
-  {
-    title: "⛳ 출전 관련 유의사항",
-    bullets: [
-      "예선 첫 경기에서 기권 처리되었더라도, 이후 경기부터는 출전 가능합니다.",
-      "경기 중 부상 발생 시, 최대 5분간 응급처치가 허용되며, 고의성이 확인되면 해당 경기는 몰수 처리됩니다.",
-      "승부 조작 적발 시, 모든 경기는 즉시 몰수 처리됩니다.",
-    ],
-  },
-  {
-    title: "🥉 3위 결정 방식",
-    bullets: [
-      "공동 3위는 없습니다.",
-      "4강전에서 최종 1위 팀에게 패한 팀이 자동 3위로 확정됩니다.",
-    ],
-  },
-  {
-    title: "📦 참가팀 부족 시 조정 안내",
-    bullets: [
-      "출전 팀이 4팀 미만일 경우, 대회본부는 다음과 같은 조치를 취할 수 있습니다:",
-      "🔶 연령 통합 또는 🔶 급수 통합",
-      "🔶 또는 해당 종목 취소",
-      "선수열람 기간 내에 통보됩니다.",
-      "통합 우선순위: ① 연령 통합 → ② 급수 통합",
-    ],
-  },
-];
+import type { TournamentPreview } from "~/types/home";
+
+export type TournamentRule = { title: string; paragraphs?: string[]; bullets?: string[]; images?: string[]; sourceUrl?: string };
+export function getTournamentRules(tournament: TournamentPreview): TournamentRule[] {
+  const rules: TournamentRule[] = [
+    { title: "📌 대회 안내", bullets: [tournament.title, tournament.dates, tournament.venue || tournament.location] },
+    { title: "📝 접수 안내", paragraphs: [
+      `접수기간: ${tournament.registration || "원문 요강 확인"}`,
+      `참가비: ${tournament.entryFee || "원문 요강 확인"}`,
+    ] },
+  ];
+  if (tournament.sourceId === "3980") rules.push({ title: "🏸 참가 자격", paragraphs: ["협회에 등록된 회원을 대상으로 합니다. 미성년자는 보호자의 동의가 필요합니다.", "연령은 출생연도를 기준으로 하며, 복식과 혼합복식 출전 시 연령과 급수를 일치시켜야 합니다."] });
+  if (tournament.sourceId === "3991") rules.push({ title: "⏰ 경기 일정", paragraphs: ["경기 시작: 2026년 10월 11일 오전 8시", "입장식: 오후 1시"] });
+  rules.push({ title: "📋 대회요강", images: tournament.outlineImages, paragraphs: tournament.outlineImages?.length ? [] : ["BKPLAY에 게시된 추가 요강은 원문에서 확인해 주세요."], sourceUrl: tournament.sourceUrl });
+  return rules;
+}
 
 export type QuestionComment = { id: string; author: string; content: string; createdAt: string; attachments?: string[] };
 export type TournamentQuestion = {

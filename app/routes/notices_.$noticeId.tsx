@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useLoaderData, useRouteError } from "@remix-run/react";
 import { CalendarDays, Eye } from "lucide-react";
 import { NoticeDetail } from "~/components/features/notices/NoticeDetail";
@@ -6,16 +6,16 @@ import { AppBar, StickyHeader } from "~/components/ui";
 import { notices } from "~/data/notices";
 import { useBackNavigation } from "~/navigation";
 
-export function loader({ params }: LoaderFunctionArgs) {
+export function clientLoader({ params }: LoaderFunctionArgs) {
   const notice = notices.find(({ id }) => id === params.noticeId);
   if (!notice) throw new Response("공지사항을 찾을 수 없어요", { status: 404 });
-  return json({ notice });
+  return ({ notice });
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [{ title: `${data?.notice.title ?? "공지사항 상세"} | 위꾹` }];
+export const meta: MetaFunction<typeof clientLoader> = ({ data }) => [{ title: `${data?.notice.title ?? "공지사항 상세"} | 위꾹` }];
 
 export default function NoticeDetailPage() {
-  const { notice } = useLoaderData<typeof loader>();
+  const { notice } = useLoaderData<typeof clientLoader>();
   const goBack = useBackNavigation("/notices");
 
   return <div className="min-h-full bg-neutral-white">
@@ -26,8 +26,8 @@ export default function NoticeDetailPage() {
       <header className="border-b border-neutral-border px-5 py-5">
         <h1 className="text-heading font-bold leading-6">{notice.title}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2.5 text-caption text-neutral-subtext">
-          <span className="inline-flex items-center gap-1"><CalendarDays size={13} aria-hidden="true" /><time dateTime={notice.date}>{notice.date}</time></span>
-          <span className="inline-flex items-center gap-1"><Eye size={14} aria-hidden="true" /><span className="sr-only">조회수 </span>{notice.views}</span>
+          <span className="inline-flex items-center gap-1"><CalendarDays size={12} aria-hidden="true" /><time dateTime={notice.date}>{notice.date}</time></span>
+          <span className="inline-flex items-center gap-1"><Eye size={12} aria-hidden="true" /><span className="sr-only">조회수 </span>{notice.views}</span>
         </div>
       </header>
       <NoticeDetail content={notice.content} />

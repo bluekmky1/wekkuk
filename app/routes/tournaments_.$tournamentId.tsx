@@ -1,6 +1,6 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useLoaderData, useRouteError } from "@remix-run/react";
-import { ArrowLeft, ChevronDown, ChevronUp, MapPin, Share2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Share2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DetailDialog } from "~/components/DetailDialog";
 import { CompetitionPanel } from "~/components/CompetitionPanel";
@@ -8,33 +8,33 @@ import { TournamentIntroduction } from "~/components/features/tournament-detail/
 import { AttachmentsPanel } from "~/components/features/tournament-detail/AttachmentsPanel";
 import { QuestionList } from "~/components/features/tournament-detail/QuestionList";
 import { InquiryForm } from "~/components/features/tournament-detail/InquiryForm";
-import { tournaments } from "~/data/home";
-import { tournamentRules } from "~/data/tournament-details";
+import { findTournament } from "~/data/home";
+import { getTournamentRules } from "~/data/tournament-details";
 import { useBackNavigation } from "~/navigation";
 import { useRouteQuery } from "~/hooks/useRouteQuery";
 import { useTournamentQuestions } from "~/hooks/useTournamentQuestions";
 import { AppBar, Button, SegmentedControl, SectionNav, StickyHeader, Toast } from "~/components/ui";
 import { getAppScrollElement, scrollAppTo, scrollAppToElement } from "~/viewport";
 
-export function loader({ params }: LoaderFunctionArgs) {
-  const tournament = tournaments.find(({ id }) => id === params.tournamentId);
+export function clientLoader({ params }: LoaderFunctionArgs) {
+  const tournament = findTournament(params.tournamentId);
   if (!tournament) throw new Response("대회를 찾을 수 없어요", { status: 404 });
-  return json({ tournament });
+  return ({ tournament });
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [{ title: `${data?.tournament.title ?? "대회 상세"} | 위꾹` }];
+export const meta: MetaFunction<typeof clientLoader> = ({ data }) => [{ title: `${data?.tournament.title ?? "대회 상세"} | 위꾹` }];
 
 type Section = "details" | "attachments" | "questions";
-type Dialog = "venues" | "inquiry" | null;
+type Dialog = "inquiry" | null;
 
 
 export default function TournamentDetailPage() {
-  const { tournament } = useLoaderData<typeof loader>();
+  const { tournament } = useLoaderData<typeof clientLoader>();
   const goBack = useBackNavigation("/tournaments");
   const { params, update } = useRouteQuery();
   const page = params.get("page") === "matches" ? "matches" : "tournament";
   const [activeSection, setActiveSection] = useState<Section>("details");
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [hidePrivate, setHidePrivate] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [message, setMessage] = useState("");
@@ -45,11 +45,21 @@ export default function TournamentDetailPage() {
   const questionsRef = useRef<HTMLDivElement>(null);
   const visibleQuestions = questions.filter((question) => !hidePrivate || !question.private);
   const dateLabel = tournament.dates.replace(/\./g, "-").replace(/\s*\([^)]*\)/g, "").replace(/\s*~\s*/g, "~");
-  const organizer = tournament.location === "경기 고양" ? "고양특례시" : tournament.location;
+  const tournamentRules = getTournamentRules(tournament);
+  const organizer = tournament.organizer ?? tournament.host ?? tournament.location;
 
   useEffect(() => {
     try { setLiked(localStorage.getItem(`wekkuk-tournament-like:${tournament.id}`) === "1"); } catch { setLiked(false); }
   }, [tournament.id]);
+
+  function handleBack() {
+    if (page === "matches") {
+      update({ page: null });
+      scrollAppTo({ top: 0 });
+      return;
+    }
+    goBack();
+  }
 
   function toggleLike() {
     const next = !liked;
@@ -111,16 +121,16 @@ export default function TournamentDetailPage() {
 
   return (
     <div className="min-h-full bg-neutral-white">
-      <StickyHeader layer={40}><AppBar onBack={goBack} center={<SegmentedControl items={[{ value: "tournament", label: "대회 정보" }, { value: "matches", label: "경기 정보" }]} value={page} onChange={(value) => { update({ page: value === "matches" ? "matches" : null }); scrollAppTo({ top: 0 }); }} label="대회 화면" idPrefix="tournament-page" />} actions={page === "tournament" ? <button type="button" onClick={shareTournament} aria-label="대회 공유" className="flex h-10 w-8 items-center justify-center"><Share2 size={25} strokeWidth={2.2} aria-hidden="true" /></button> : null} /></StickyHeader>
+      <StickyHeader layer={40}><AppBar onBack={handleBack} center={<SegmentedControl items={[{ value: "tournament", label: "대회 정보" }, { value: "matches", label: "경기 정보" }]} value={page} onChange={(value) => { update({ page: value === "matches" ? "matches" : null }); scrollAppTo({ top: 0 }); }} label="대회 화면" idPrefix="tournament-page" />} actions={page === "tournament" ? <button type="button" onClick={shareTournament} aria-label="대회 공유" className="flex h-10 w-8 items-center justify-center"><Share2 size={24} strokeWidth={2.2} aria-hidden="true" /></button> : null} /></StickyHeader>
 
       <main>
         <div id="tournament-page-tournament-panel" role="tabpanel" aria-labelledby="tournament-page-tournament-tab" hidden={page !== "tournament"}>
-          <TournamentIntroduction title={tournament.title} dateLabel={dateLabel} location={tournament.location} organizer={organizer} onVenueClick={() => setDialog("venues")} liked={liked} likeCount={24 + Number(liked)} onLike={toggleLike} />
+          <TournamentIntroduction title={tournament.title} dateLabel={dateLabel} location={tournament.location} organizer={organizer} venue={tournament.venue} host={tournament.host} type={tournament.type} posterUrl={tournament.displayPosterUrl ?? tournament.posterUrl} supporters={tournament.supporters} sponsors={tournament.sponsors} liked={liked} likeCount={24 + Number(liked)} onLike={toggleLike} />
 
-          <div className="sticky top-[60px] z-20 mt-5"><SectionNav items={[{ value: "details", label: "대회상세" }, { value: "attachments", label: "첨부파일" }, { value: "questions", label: `Q&A(${questions.length})` }]} value={activeSection} onChange={jumpTo} label="대회 정보 섹션" /></div>
+          <div className="sticky top-[calc(60px+var(--appbar-top-inset))] z-20 mt-5"><SectionNav items={[{ value: "details", label: "대회상세" }, { value: "attachments", label: "첨부파일" }, { value: "questions", label: `Q&A(${questions.length})` }]} value={activeSection} onChange={jumpTo} label="대회 정보 섹션" /></div>
 
           <div className="px-5">
-            <section ref={detailsRef} id="details" aria-labelledby="details-heading" className="scroll-mt-[124px] pt-5">
+            <section ref={detailsRef} id="details" aria-labelledby="details-heading" className="scroll-mt-[calc(124px+var(--appbar-top-inset))] pt-5">
               <h2 id="details-heading" className="text-heading-lg font-bold">대회상세</h2>
               <div id="tournament-rules" className={`mt-3 space-y-5 text-heading leading-5 ${expanded ? "" : "max-h-64 overflow-hidden [mask-image:linear-gradient(black_70%,transparent)]"}`}>
                 {tournamentRules.map((rule) => (
@@ -128,20 +138,22 @@ export default function TournamentDetailPage() {
                     <h3>{rule.title}</h3>
                     {rule.bullets && <ul className="list-disc pl-6">{rule.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}
                     {rule.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                    {rule.images?.map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer"><img src={url} alt={`${tournament.title} 대회요강 ${index + 1}페이지`} loading="lazy" className="mt-3 h-auto w-full" referrerPolicy="no-referrer" /></a>)}
+                    {rule.sourceUrl && <a href={rule.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-caption text-neutral-subtext underline">BKPLAY 대회 원문</a>}
                   </div>
                 ))}
               </div>
               <Button type="button" variant="ghost" aria-expanded={expanded} aria-controls="tournament-rules" onClick={() => {
                 if (expanded) scrollAppToElement(detailsRef.current);
                 setExpanded((value) => !value);
-              }} className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-none border-t-2 border-neutral-border text-caption text-neutral-subtext">
-                대회상세 {expanded ? "접기" : "펼치기"}{expanded ? <ChevronUp size={17} aria-hidden="true" /> : <ChevronDown size={17} aria-hidden="true" />}
+              }} className={`relative flex h-14 w-full items-center justify-center gap-2 rounded-none text-caption text-neutral-subtext ${expanded ? "mt-8 border-t-2 border-neutral-border" : "-mt-10 bg-gradient-to-t from-neutral-white via-neutral-white/90 to-transparent"}`}>
+                대회상세 {expanded ? "접기" : "펼치기"}{expanded ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
               </Button>
             </section>
 
-            <div ref={attachmentsRef} className="scroll-mt-[124px]"><AttachmentsPanel onDownload={() => setMessage("첨부파일은 준비 중이에요.")} /></div>
+            <div ref={attachmentsRef} className="scroll-mt-[calc(124px+var(--appbar-top-inset))]"><AttachmentsPanel onDownload={() => setMessage("미리보기용 첨부파일이에요. 다운로드는 제공하지 않아요.")} /></div>
 
-            <div ref={questionsRef} className="scroll-mt-[124px]"><QuestionList tournamentId={tournament.id} questions={visibleQuestions} totalCount={questions.length} hidePrivate={hidePrivate} onHidePrivateChange={setHidePrivate} onInquiry={() => setDialog("inquiry")} /></div>
+            <div ref={questionsRef} className="scroll-mt-[calc(124px+var(--appbar-top-inset))]"><QuestionList tournamentId={tournament.id} questions={visibleQuestions} totalCount={questions.length} hidePrivate={hidePrivate} onHidePrivateChange={setHidePrivate} onInquiry={() => setDialog("inquiry")} /></div>
           </div>
         </div>
         <div id="tournament-page-matches-panel" role="tabpanel" aria-labelledby="tournament-page-matches-tab" hidden={page !== "matches"}>
@@ -152,13 +164,7 @@ export default function TournamentDetailPage() {
 
       <Toast message={message} onClose={() => setMessage("")} />
 
-      {dialog && <DetailDialog title={dialog === "venues" ? "대회 장소" : "주최측에 문의하기"} onClose={() => setDialog(null)}>
-        {dialog === "venues" ? (
-          <div className="text-body"><p className="flex items-center gap-2 font-semibold"><MapPin size={18} aria-hidden="true" />{tournament.location === "경기 고양" ? "어울림누리체육관 외" : `${tournament.location} 대회 체육관`}</p><p className="mt-3 text-neutral-subtext">세부 경기장과 코트는 대회요강에서 확인해 주세요.</p></div>
-        ) : (
-          <InquiryForm onSubmit={submitInquiry} />
-        )}
-      </DetailDialog>}
+      {dialog && <DetailDialog title="주최측에 문의하기" onClose={() => setDialog(null)}><InquiryForm onSubmit={submitInquiry} /></DetailDialog>}
     </div>
   );
 }

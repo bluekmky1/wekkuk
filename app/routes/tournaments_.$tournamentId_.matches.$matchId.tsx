@@ -1,10 +1,10 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ArrowLeft, Bookmark, FileText, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCompetitionData } from "~/data/competition";
 import { MatchScoreboard } from "~/components/features/match-detail/MatchScoreboard";
-import { tournaments } from "~/data/home";
+import { findTournament } from "~/data/home";
 import { useRouteQuery } from "~/hooks/useRouteQuery";
 import { useBackNavigation } from "~/navigation";
 import { CommentComposer, EmptyState, IconButton, TabBar, Toast, type CommentSubmission } from "~/components/ui";
@@ -13,19 +13,19 @@ import { scrollAppToElement } from "~/viewport";
 
 export { CompetitionRouteError as ErrorBoundary } from "~/components/CompetitionRouteError";
 
-export function loader({ params }: LoaderFunctionArgs) {
-  const tournament = tournaments.find(({ id }) => id === params.tournamentId);
+export function clientLoader({ params }: LoaderFunctionArgs) {
+  const tournament = findTournament(params.tournamentId);
   if (!tournament) throw new Response("대회를 찾을 수 없어요", { status: 404 });
   const data = getCompetitionData(tournament);
   const match = data.matches.find(({ id }) => id === params.matchId);
   if (!match) throw new Response("경기를 찾을 수 없어요", { status: 404 });
-  return json({ tournament, match, division: data.divisions.find(({ id }) => id === match.divisionId)!, venue: data.venues.find(({ id }) => id === match.venueId)! });
+  return ({ tournament, match, division: data.divisions.find(({ id }) => id === match.divisionId)!, venue: data.venues.find(({ id }) => id === match.venueId)! });
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [{ title: `${data ? `${data.match.teamA.name} vs ${data.match.teamB.name}` : "경기 상세"} | 위꾹` }];
+export const meta: MetaFunction<typeof clientLoader> = ({ data }) => [{ title: `${data ? `${data.match.teamA.name} vs ${data.match.teamB.name}` : "경기 상세"} | 위꾹` }];
 
 export default function MatchDetailPage() {
-  const { tournament, match, division, venue } = useLoaderData<typeof loader>();
+  const { tournament, match, division, venue } = useLoaderData<typeof clientLoader>();
   const finished = match.status === "finished";
   const goBack = useBackNavigation(`/tournaments/${tournament.id}?page=matches&view=schedule`);
   const { params, update } = useRouteQuery();
@@ -75,10 +75,10 @@ export default function MatchDetailPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-neutral-white">
-      <header className="sticky top-0 z-30 bg-neutral-white"><div className="flex h-[60px] items-center justify-between px-5 pb-3">
-        <IconButton onClick={goBack} label="뒤로 가기" className="-ml-1 h-10 w-8"><ArrowLeft size={25} strokeWidth={2.2} aria-hidden="true" /></IconButton>
+      <header className="appbar-top-space sticky top-0 z-30 bg-neutral-white"><div className="flex h-[60px] items-center justify-between px-5 pb-3">
+        <IconButton onClick={goBack} label="뒤로 가기" className="-ml-1 h-10 w-8"><ArrowLeft size={24} strokeWidth={2.2} aria-hidden="true" /></IconButton>
         <h1 className="sr-only">{match.teamA.name} 대 {match.teamB.name} 경기 상세</h1>
-        <div className="flex items-center gap-4"><IconButton onClick={shareMatch} label="경기 공유" className="h-10 w-8"><Share2 size={25} strokeWidth={2.2} aria-hidden="true" /></IconButton><IconButton onClick={toggleBookmark} label="경기 저장" aria-pressed={bookmarked} className="h-10 w-8"><Bookmark size={25} strokeWidth={2.2} fill={bookmarked ? "currentColor" : "none"} aria-hidden="true" /></IconButton></div>
+        <div className="flex items-center gap-4"><IconButton onClick={shareMatch} label="경기 공유" className="h-10 w-8"><Share2 size={24} strokeWidth={2.2} aria-hidden="true" /></IconButton><IconButton onClick={toggleBookmark} label="경기 저장" aria-pressed={bookmarked} className="h-10 w-8"><Bookmark size={24} strokeWidth={2.2} fill={bookmarked ? "currentColor" : "none"} aria-hidden="true" /></IconButton></div>
       </div></header>
       <main className={`flex flex-1 flex-col ${tab === "cheers" ? "pb-44" : ""}`}>
         <MatchScoreboard match={match} division={division} venue={venue} />
@@ -88,7 +88,7 @@ export default function MatchDetailPage() {
             {comments.map((comment) => <li key={comment.id} id={`cheer-${comment.id}`} className="scroll-mt-[68px] text-body leading-5">
               <p className="font-bold">{comment.author}</p>
               {comment.content && <p className="mt-1 whitespace-pre-wrap break-words">{comment.content}</p>}
-              {comment.attachments.map((name, index) => <span key={`${name}-${index}`} className="mt-1 flex items-center gap-1 text-caption text-neutral-subtext"><FileText size={13} aria-hidden="true" /><span className="truncate">{name}</span></span>)}
+              {comment.attachments.map((name, index) => <span key={`${name}-${index}`} className="mt-1 flex items-center gap-1 text-caption text-neutral-subtext"><FileText size={12} aria-hidden="true" /><span className="truncate">{name}</span></span>)}
               <time dateTime={comment.createdAt} className="mt-1 block text-caption text-neutral-subtext">{new Date(comment.createdAt).toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Seoul" })}</time>
             </li>)}
           </ul> : <EmptyState title={ready ? "첫 응원을 남겨주세요" : "응원을 불러오는 중이에요"} description="선수들에게 응원의 한마디를 전해보세요." />)}

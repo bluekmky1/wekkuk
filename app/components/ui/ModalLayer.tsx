@@ -57,5 +57,13 @@ export function ModalLayer({ titleId, onClose, children, bottom = false }: { tit
     };
   }, [host]);
 
-  return host ? createPortal(<div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className={cx("absolute inset-0 flex justify-center bg-black/40 text-neutral-text outline-none", bottom ? "items-end" : "items-center p-4")} onPointerDown={(event) => { if (event.target === event.currentTarget) closeRef.current(); }}>{children}</div>, host) : null;
+  return host ? createPortal(<div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className={cx("absolute inset-0 flex justify-center bg-black/40 text-neutral-text outline-none", bottom ? "items-end" : "items-center p-4")} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => {
+    // Keep the backdrop and inert lock until the full click has been consumed.
+    // Closing on pointerdown lets the remainder of a touch reach the list below.
+    event.stopPropagation();
+    if (event.target === event.currentTarget) {
+      event.preventDefault();
+      closeRef.current();
+    }
+  }}>{children}</div>, host) : null;
 }

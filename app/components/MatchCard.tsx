@@ -1,6 +1,6 @@
+import { Badge } from "~/components/ui/ListPrimitives";
 import { PushLink } from "~/components/PushLink";
 import type { CompetitionMatch } from "~/data/competition";
-import { CourtInfo } from "~/components/domain/CourtInfo";
 import { MatchStatusBadge, matchStatusLabels } from "~/components/domain/MatchStatusBadge";
 
 export function MatchCard({ tournamentId, match, venue }: { tournamentId: string; match: CompetitionMatch; venue: string }) {
@@ -12,32 +12,32 @@ export function MatchCard({ tournamentId, match, venue }: { tournamentId: string
   const renderTeam = ({ team, score, other }: typeof teams[number]) => {
     const losing = finished && score !== null && other !== null && score < other;
     return (
-      <div key={team.id} className={`flex min-w-0 flex-col items-center justify-center gap-0.5 text-center ${losing ? "text-neutral-muted" : "text-neutral-text"}`}>
+      <div key={team.id} className={`flex min-w-[64px] flex-col items-center justify-center gap-1 text-center ${losing ? "text-neutral-muted" : "text-neutral-text"}`}>
         <span className="line-clamp-2 w-full break-words text-heading font-bold leading-5">{team.name}</span>
-        <span className="w-full truncate text-caption leading-4">{team.players.join(" ")}</span>
+        <span className="flex w-full flex-col text-caption leading-4">{team.players.map((player, index) => <span key={`${player}-${index}`} className="break-words">{player}</span>)}</span>
       </div>
     );
   };
   const renderScore = ({ score, other }: typeof teams[number]) => {
     const losing = finished && score !== null && other !== null && score < other;
-    return <span className={`self-center text-[28px] font-bold leading-none tabular-nums ${losing ? "text-neutral-muted" : "text-neutral-text"}`}>{score ?? "-"}</span>;
+    return <span className={`min-w-[36px] self-center text-center text-[28px] font-bold leading-none tabular-nums ${losing ? "text-neutral-muted" : "text-neutral-text"}`}>{score ?? "-"}</span>;
   };
 
   return (
-    <PushLink to={`/tournaments/${encodeURIComponent(tournamentId)}/matches/${encodeURIComponent(match.id)}`} aria-label={`${match.teamA.name} 대 ${match.teamB.name}, ${match.time}, ${matchStatusLabels[match.status]}, 경기 상세`} className="block border-b border-neutral-border px-5 py-5 focus-visible:outline-primary">
-      <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-caption leading-5">
-        {match.previousCourt !== undefined && <span className="rounded-full border border-[#ff4646] px-1.5 text-[10px] leading-4 text-[#ff4646]">코트 변경</span>}
-        <CourtInfo match={match} venue={venue} />
+    <PushLink to={`/tournaments/${encodeURIComponent(tournamentId)}/matches/${encodeURIComponent(match.id)}`} aria-label={`${match.teamA.name} 대 ${match.teamB.name}, ${match.time}, ${matchStatusLabels[match.status]}, 경기 상세`} className="match-card block border-b border-neutral-border px-5 py-5 focus-visible:outline-primary">
+      <p className="flex min-w-0 items-center gap-1.5 text-caption leading-5">
+        {match.previousCourt !== undefined && <Badge tone="danger">코트 변경</Badge>}
+        <span className="min-w-0 truncate text-neutral-subtext" title={venue}>{venue}</span>
+        <span className="shrink-0 whitespace-nowrap text-neutral-subtext">{match.court}코트 {match.sequence}경기</span>
+        <span className="shrink-0 whitespace-nowrap text-neutral-subtext tabular-nums">· {match.time}</span>
       </p>
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_auto_minmax(0,1fr)_68px] items-stretch gap-2">
+      <div className="match-card-layout mt-3 grid items-stretch gap-2">
         {renderTeam(teams[0])}
-        {renderScore(teams[0])}
-        {renderScore(teams[1])}
-        {renderTeam(teams[1])}
-        <div className="flex min-w-0 flex-col items-center justify-center gap-1 border-l border-neutral-border pl-2">
-          <span className="text-body tabular-nums">{match.time}</span>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <div className="grid grid-cols-[36px_36px] gap-2" aria-label="경기 점수">{renderScore(teams[0])}{renderScore(teams[1])}</div>
           <MatchStatusBadge status={match.status} />
         </div>
+        {renderTeam(teams[1])}
       </div>
     </PushLink>
   );

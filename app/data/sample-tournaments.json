@@ -1,0 +1,74 @@
+[
+  {
+    "id": "sample-december-1",
+    "title": "2026 겨울빛 전국 배드민턴 오픈",
+    "location": "경기 수원",
+    "dates": "2026.12.05 (토) ~ 2026.12.06 (일)",
+    "month": 12,
+    "type": "전국대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  },
+  {
+    "id": "sample-december-2",
+    "title": "2026 첫눈 셔틀 페스티벌",
+    "location": "서울 강서구",
+    "dates": "2026.12.12 (토) ~ 2026.12.13 (일)",
+    "month": 12,
+    "type": "전국대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  },
+  {
+    "id": "sample-december-3",
+    "title": "2026 달빛스매셔스 클럽 교류전",
+    "location": "경기 고양",
+    "dates": "2026.12.19 (토)",
+    "month": 12,
+    "type": "친선대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  },
+  {
+    "id": "sample-december-4",
+    "title": "2026 윈터 랠리 챌린지",
+    "location": "인천 서구",
+    "dates": "2026.12.20 (일)",
+    "month": 12,
+    "type": "전국대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  },
+  {
+    "id": "sample-december-5",
+    "title": "2026 은하콕 송년 배드민턴대회",
+    "location": "경기 용인",
+    "dates": "2026.12.26 (토)",
+    "month": 12,
+    "type": "전국대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  },
+  {
+    "id": "sample-december-6",
+    "title": "2026 해오름 연말 오픈",
+    "location": "경기 성남",
+    "dates": "2026.12.27 (일)",
+    "month": 12,
+    "type": "전국대회",
+    "status": "경기 준비",
+    "host": "가상 대회 운영팀",
+    "organizer": "가상 대회 운영팀",
+    "sourceName": "가상 예시 대회"
+  }
+]

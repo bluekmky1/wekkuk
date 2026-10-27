@@ -46,6 +46,13 @@ export default function App() {
   const outlet = useOutlet();
   const stageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    // Keep Android Kakao in the host window bounds; its visual viewport
+    // may remain shorter after the browser toolbar changes.
+    const userAgent = navigator.userAgent;
+    const isAndroidKakao = /Android/i.test(userAgent) && /KAKAOTALK/i.test(userAgent);
+    if (isAndroidKakao) {
+      stageRef.current?.style.setProperty("--bottom-nav-padding", "12px");
+    }
     const viewport = window.visualViewport;
     if (!viewport) return;
     let frame = 0;
@@ -53,17 +60,31 @@ export default function App() {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         if (viewport.scale !== 1) return;
-        stageRef.current?.style.setProperty("--app-visual-height", `${viewport.height}px`);
-        stageRef.current?.style.setProperty("--app-visual-top", `${viewport.offsetTop}px`);
+        const focused = document.activeElement;
+        const editing = focused instanceof HTMLElement && (focused.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(focused.tagName));
+        const keyboardOpen = editing && window.innerHeight - viewport.height > 120;
+        const useWindowBounds = isAndroidKakao && !keyboardOpen;
+        const height = useWindowBounds ? window.innerHeight : viewport.height;
+        const top = useWindowBounds ? 0 : viewport.offsetTop;
+        stageRef.current?.style.setProperty("--app-visual-height", `${height}px`);
+        stageRef.current?.style.setProperty("--app-visual-top", `${top}px`);
       });
     };
     update();
     viewport.addEventListener("resize", update);
     viewport.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    window.addEventListener("pageshow", update);
+    document.addEventListener("focusin", update);
+    document.addEventListener("focusout", update);
     return () => {
       cancelAnimationFrame(frame);
       viewport.removeEventListener("resize", update);
       viewport.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("pageshow", update);
+      document.removeEventListener("focusin", update);
+      document.removeEventListener("focusout", update);
     };
   }, []);
   return (

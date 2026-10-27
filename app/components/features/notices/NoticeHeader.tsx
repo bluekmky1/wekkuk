@@ -13,7 +13,7 @@ export function NoticeHeader({ category, onCategoryChange, onBack }: {
       items={noticeCategories.map((value) => ({ value, label: value }))}
       value={category}
       onChange={onCategoryChange}
-      className="flex-nowrap gap-3 overflow-x-auto px-5 pb-5 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex-nowrap gap-2 overflow-x-auto px-5 pb-0 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     />
   </StickyHeader>;
 }

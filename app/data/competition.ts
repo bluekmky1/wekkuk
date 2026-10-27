@@ -38,21 +38,26 @@ export type CompetitionData = {
   matches: CompetitionMatch[];
 };
 
-const teams: CompetitionTeam[] = [
-  { id: "team-deokcheon", name: "덕천클럽", players: ["마재훈", "마재혁"] },
-  { id: "team-unicock", name: "유니콕", players: ["김민준", "이서준"] },
-  { id: "team-byeolnuri", name: "별누리클럽", players: ["박서연", "최지우"] },
-  { id: "team-stun", name: "STUN", players: ["정현우", "윤도현"] },
-  { id: "team-four", name: "콕사랑", players: ["한지민", "오지훈"] },
-  { id: "team-five", name: "스매시클럽", players: ["강민호", "조은우"] },
-  { id: "team-six", name: "셔틀콕", players: ["임수빈", "배준호"] },
-  { id: "team-seven", name: "라온클럽", players: ["서준혁", "문채원"] },
+const originalPlayers = ["김철수", "박훈이", "최맹구", "신짱구", "이유리", "신짱아"];
+const surnames = ["김", "이", "박", "최", "문", "여", "마", "백", "송"];
+const givenNames = ["철수", "유리", "맹구", "짱구", "짱아", "훈이"];
+export const demoPlayerNames = [...new Set([
+  ...originalPlayers,
+  ...givenNames.flatMap(name => surnames.map(surname => surname + name)),
+])].slice(0, 48);
+const teamNames = [
+  "달빛스매셔스", "궤도셔틀즈", "복숭아랠리", "새벽콕연구소",
+  "구름드라이브", "노을네트단", "별빛헤어핀", "푸른궤적",
+  "은하드롭샷", "민트클리어", "바람셔틀단", "오로라랠리즈",
+  "달토끼민턴", "코랄스매셔스", "비눗방울콕", "해질녘드롭",
+  "반달네트워크", "파도클리어즈", "초록코트단", "자몽드라이브",
+  "번개헤어핀", "라일락셔틀", "해오름랠리", "도토리스매시",
 ];
-
-const venues: CompetitionVenue[] = [
-  { id: "venue-ichung-center", name: "이충문화체육센터", courts: [1, 2, 3, 4, 5, 6] },
-  { id: "venue-ichung-indoor", name: "이충실내배드민턴장", courts: [1, 2, 3, 4, 5, 6, 7, 8] },
-];
+export const demoTeams: CompetitionTeam[] = teamNames.map((name, index) => ({
+  id: `team-demo-${index + 1}`, name,
+  players: demoPlayerNames.slice(index * 2, index * 2 + 2),
+}));
+const teams = demoTeams;
 
 const divisionSpecs = [
   ["혼복", 20, "초심"], ["남복", 20, "D"], ["여복", 20, "초심"],
@@ -66,51 +71,64 @@ function parseDates(tournament: TournamentPreview): string[] {
   return [...new Set(matches.map((date) => date.replaceAll(".", "-")))];
 }
 
+export function splitVenueNames(value: string): string[] {
+  const names: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const character of value) {
+    if (character === "(" || character === "（") depth += 1;
+    if (character === ")" || character === "）") depth = Math.max(0, depth - 1);
+    if ((character === "," || character === "，") && depth === 0) {
+      if (current.trim()) names.push(current.trim());
+      current = "";
+    } else current += character;
+  }
+  if (current.trim()) names.push(current.trim());
+  return [...new Set(names)];
+}
+
 export function getCompetitionData(tournament: TournamentPreview): CompetitionData {
   const dates = parseDates(tournament);
+  // Venue names are sourced; court counts, divisions, fixtures and scores are demo data.
+  const venueNames = splitVenueNames(tournament.venue ?? "경기장 미확인");
+  const venues: CompetitionVenue[] = venueNames.map((name, index) => ({
+    id: `venue-${index + 1}`, name, courts: Array.from({ length: Math.ceil(12 / venueNames.length) }, (_, index) => index + 1),
+  }));
   const divisions: CompetitionDivision[] = dates.flatMap((date) => divisionSpecs.map(([event, age, grade]) => {
     const weekday = new Intl.DateTimeFormat("ko-KR", { weekday: "short", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`));
     const id = `division-${date}-${event}-${age}-${grade}`;
     return { id, event, age, grade, date, label: `${event}-${age}-${grade}(${weekday})`, teamCount: 0, matchCount: 0 };
   }));
-  const times = ["08:30", "09:30", "10:30", "10:50", "11:10", "11:30", "11:50", "12:10", "12:30", "12:50", "13:10"];
   const courtPool = venues.flatMap((venue) => venue.courts.map((court) => ({ venue, court })));
+  // Three round-robin rounds; disjoint pairs can play at the same time.
   const pairs: Array<[number, number, number, number]> = [
-    [2, 1, 25, 13], [0, 1, 7, 25], [0, 2, 12, 25],
-    [0, 3, 25, 20], [1, 3, 15, 25], [2, 3, 18, 25],
+    [0, 1, 25, 19], [2, 3, 21, 25],
+    [0, 2, 18, 25], [1, 3, 25, 23],
+    [0, 3, 25, 22], [1, 2, 20, 25],
   ];
   const matches: CompetitionMatch[] = [];
   dates.forEach((date) => {
     const dateDivisions = divisions.filter((division) => division.date === date);
-    let matchIndex = 0;
     dateDivisions.forEach((division, divisionIndex) => {
       ([1, 2] as const).forEach((group) => {
-        const groupStart = group === 1 ? 0 : 4;
+        const groupStart = (divisionIndex % 3) * 8 + (group - 1) * 4;
         pairs.forEach(([a, b, finalScoreA, finalScoreB], pairIndex) => {
-          const { venue, court } = courtPool[matchIndex % courtPool.length];
-          const timeSlot = Math.floor(matchIndex / courtPool.length);
-          const time = times[timeSlot];
-          const teamA = teams[groupStart + a];
-          const teamB = teams[groupStart + b];
-          const finished = divisionIndex === 0 || timeSlot === 0;
-          const live = !finished && timeSlot === 1;
+          const courtIndex = (divisionIndex % 3) * 4 + (group - 1) * 2 + pairIndex % 2;
+          const { venue, court } = courtPool[courtIndex];
+          const timeSlot = Math.floor(divisionIndex / 3) * 3 + Math.floor(pairIndex / 2);
+          const minute = 8 * 60 + 30 + timeSlot * 20;
+          const time = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+          const finished = tournament.status === "종료" || timeSlot < 3;
+          const live = !finished && timeSlot === 3;
           matches.push({
             id: `match-${date}-${venue.id}-c${court}-s${10 + timeSlot}`,
-            divisionId: division.id,
-            date,
-            venueId: venue.id,
-            court,
-            sequence: 10 + timeSlot,
-            group,
-            time,
+            divisionId: division.id, date, venueId: venue.id, court,
+            sequence: 10 + timeSlot, group, time,
             status: finished ? "finished" : live ? "live" : "scheduled",
-            teamA,
-            teamB,
+            teamA: teams[groupStart + a], teamB: teams[groupStart + b],
             scoreA: finished ? finalScoreA : live ? 15 : null,
             scoreB: finished ? finalScoreB : live ? 13 : null,
-            ...(pairIndex === 0 ? { previousCourt: court === 1 ? 5 : court - 1, previousSequence: 12 } : {}),
           });
-          matchIndex += 1;
         });
       });
     });

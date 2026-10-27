@@ -9,6 +9,7 @@ export default {
         brand: ["Tenada", "Pretendard", "sans-serif"],
       },
       fontSize: {
+        micro: ["11px", { lineHeight: "14px" }],
         caption: ["12px", { lineHeight: "16px" }],
         body: ["14px", { lineHeight: "20px" }],
         heading: ["16px", { lineHeight: "22px" }],

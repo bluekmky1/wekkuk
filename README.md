@@ -33,3 +33,18 @@ npm run typecheck
 현재 색상은 첨부된 Figma 원시 토큰을 그대로 옮겼습니다. 시멘틱 토큰은 정의하지 않았습니다. Pretendard는 공식 프로젝트에서 안내하는 jsDelivr 스타일시트로 로드합니다. 위꾹 로고 글꼴인 테나다는 jsDelivr WOFF2로 로드합니다. 아이콘은 `lucide-react`를 사용합니다.
 
 앱 화면은 내부 스크롤을 사용하고 경로·쿼리·히스토리 항목별 스크롤을 수동 복원합니다. 경로 전환은 앱 viewport 안에서 처리하며 쿼리 변경에는 전환을 적용하지 않습니다. 모바일 VisualViewport 높이 변화도 반영합니다. 대회와 검색 결과는 현재 예시 데이터입니다. 현재 IA와 URL 상태 관리는 [IA.md](./IA.md)에 정리했습니다. 알림은 `/notifications` 목록에서 제목·시간을 표시하고 관련 공지로 이동합니다. 홈 공지 미리보기에서도 개별 공지 상세로 바로 이동할 수 있습니다. 선수 결과 상세와 MY 등의 후속 화면은 아직 구현하지 않았습니다.
+
+## Cloudflare Pages 배포
+
+Remix SPA 모드(`ssr: false`)를 사용합니다. 예시 데이터를 읽는 상세 화면은 `clientLoader`로 처리하며, 배포에는 별도 Node 서버가 필요하지 않습니다.
+
+```sh
+npm ci
+npm run build
+npx --yes wrangler@4 login
+npm run deploy
+```
+
+배포 폴더는 `build/client`이고 Pages 프로젝트 이름은 `wekkuk`입니다. Git 연동 시 빌드 명령은 `npm run build`, 출력 디렉터리는 `build/client`로 설정합니다. Pages 기본 SPA fallback으로 상세 URL 직접 진입과 새로고침을 처리합니다. `404.html`은 추가하지 않습니다.
+
+로컬 빌드 미리보기는 `npm start`로 실행합니다.

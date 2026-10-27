@@ -36,10 +36,10 @@ export function ScheduleFilters({ expanded, date, dates, venue, venues, court, c
         {courts.map((value) => <ChoiceChip key={value} selected={court === value} onClick={() => onCourt(value)}>{value}코트{!venue.courts.includes(value) ? " (미운영)" : ""}</ChoiceChip>)}
       </div>
     </section>}
-    <section ref={summaryRef} aria-label={expanded ? "경기시간 필터 접기" : "선택한 경기시간 필터"} className="sticky top-[104px] z-20 flex min-h-[66px] items-center justify-between gap-2 border-b-2 border-neutral-border bg-neutral-white px-5 py-3">
+    <section ref={summaryRef} aria-label={expanded ? "경기시간 필터 접기" : "선택한 경기시간 필터"} className="sticky top-[calc(104px+var(--appbar-top-inset))] z-20 flex min-h-[66px] items-center justify-between gap-2 border-b-2 border-neutral-border bg-neutral-white px-5 py-3">
       {expanded ? <div className="flex w-full justify-center"><Button variant="ghost" size="sm" onClick={onCollapse} aria-expanded="true" className="h-9 text-caption text-neutral-subtext">필터 접기<ChevronUp size={16} aria-hidden="true" /></Button></div> : <>
         <div className="min-w-0"><h2 className="truncate text-body font-semibold">{venue.name} · {court}코트</h2><p className="mt-1 text-caption">{formatCompetitionDate(date)}</p></div>
-        <FilterChip aria-expanded="false" onClick={onExpand} icon={<SlidersHorizontal size={14} aria-hidden="true" />}>필터</FilterChip>
+        <FilterChip aria-expanded="false" onClick={onExpand} icon={<SlidersHorizontal size={12} aria-hidden="true" />}>필터</FilterChip>
       </>}
     </section>
   </>;

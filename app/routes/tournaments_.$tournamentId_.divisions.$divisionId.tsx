@@ -1,9 +1,9 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { CompetitionHeader } from "~/components/CompetitionHeader";
 import { MatchCard } from "~/components/MatchCard";
 import { getCompetitionData } from "~/data/competition";
-import { tournaments } from "~/data/home";
+import { findTournament } from "~/data/home";
 import { useRouteQuery } from "~/hooks/useRouteQuery";
 import { getStandings } from "~/utils/competition";
 import { StandingsTable } from "~/components/features/division/StandingsTable";
@@ -13,23 +13,24 @@ import { scrollAppTo } from "~/viewport";
 
 export { CompetitionRouteError as ErrorBoundary } from "~/components/CompetitionRouteError";
 
-export function loader({ params }: LoaderFunctionArgs) {
-  const tournament = tournaments.find(({ id }) => id === params.tournamentId);
+export function clientLoader({ params }: LoaderFunctionArgs) {
+  const tournament = findTournament(params.tournamentId);
   if (!tournament) throw new Response("대회를 찾을 수 없어요", { status: 404 });
   const data = getCompetitionData(tournament);
   const division = data.divisions.find(({ id }) => id === params.divisionId);
   if (!division) throw new Response("부문을 찾을 수 없어요", { status: 404 });
-  return json({ tournament, division, teams: data.teams, venues: data.venues, matches: data.matches.filter((match) => match.divisionId === division.id) });
+  return ({ tournament, division, teams: data.teams, venues: data.venues, matches: data.matches.filter((match) => match.divisionId === division.id) });
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [{ title: `${data?.division.label ?? "대진표"} | 위꾹` }];
+export const meta: MetaFunction<typeof clientLoader> = ({ data }) => [{ title: `${data?.division.label ?? "대진표"} | 위꾹` }];
 
 export default function DivisionPage() {
-  const { tournament, division, teams, venues, matches } = useLoaderData<typeof loader>();
+  const { tournament, division, teams, venues, matches } = useLoaderData<typeof clientLoader>();
   const { params, update } = useRouteQuery();
   const final = params.get("round") === "final";
   const group = params.get("group") === "2" ? 2 : 1;
-  const groupTeams = teams.slice(group === 1 ? 0 : 4, group === 1 ? 4 : 8);
+  const groupTeamIds = new Set(matches.filter(match => match.group === group).flatMap(match => [match.teamA.id, match.teamB.id]));
+  const groupTeams = teams.filter(team => groupTeamIds.has(team.id));
   const groupMatches = matches.filter((match) => match.group === group);
   const standings = getStandings(groupTeams, groupMatches);
 

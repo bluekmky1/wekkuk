@@ -17,7 +17,7 @@ function Tabs<T extends string>({ items, value, onChange, label, fullWidth = tru
       const current = available.indexOf(index);
       const next = event.key === "Home" ? available[0] : event.key === "End" ? available[available.length - 1] : available[(current + (event.key === "ArrowRight" ? 1 : -1) + available.length) % available.length];
       if (next !== undefined) { onChange(items[next].value); refs.current[next]?.focus(); }
-    }} className={cx("whitespace-nowrap disabled:cursor-not-allowed disabled:text-neutral-border", fullWidth ? "min-w-0 flex-1" : "min-w-[81px] px-4", segmented ? cx("rounded-full text-caption font-semibold", value === item.value ? "bg-neutral-white text-neutral-text" : "text-neutral-subtext") : cx("border-b-2 text-body", value === item.value ? "border-neutral-text font-bold" : "border-transparent"))}>{item.label}</button>)}
+    }} className={cx("whitespace-nowrap disabled:cursor-not-allowed disabled:text-neutral-border", fullWidth ? "min-w-0 flex-1" : "min-w-[81px] px-4", segmented ? cx("rounded-full text-caption font-semibold", value === item.value ? "bg-neutral-white text-neutral-text" : "text-neutral-subtext") : cx("border-b-2 text-body", value === item.value ? "border-primary font-bold text-[#005eb8]" : "border-transparent"))}>{item.label}</button>)}
   </div>;
 }
 
@@ -25,5 +25,5 @@ export function TabBar<T extends string>(props: TabBarProps<T>) { return <Tabs {
 export function SegmentedControl<T extends string>(props: TabBarProps<T>) { return <Tabs {...props} segmented />; }
 
 export function SectionNav<T extends string>({ items, value, onChange, label, fullWidth = false, className }: Omit<TabBarProps<T>, "idPrefix">) {
-  return <nav aria-label={label} className={cx("flex h-12 border-b border-neutral-surface bg-neutral-white", className)}>{items.map((item) => <button key={item.value} type="button" disabled={item.disabled} onClick={() => onChange(item.value)} aria-current={value === item.value ? "location" : undefined} className={cx("border-b-2 px-5 text-body", fullWidth && "min-w-0 flex-1", value === item.value ? "border-neutral-text font-bold" : "border-transparent")}>{item.label}</button>)}</nav>;
+  return <nav aria-label={label} className={cx("flex h-12 border-b border-neutral-surface bg-neutral-white", className)}>{items.map((item) => <button key={item.value} type="button" disabled={item.disabled} onClick={() => onChange(item.value)} aria-current={value === item.value ? "location" : undefined} className={cx("border-b-2 px-5 text-body", fullWidth && "min-w-0 flex-1", value === item.value ? "border-primary font-bold text-[#005eb8]" : "border-transparent")}>{item.label}</button>)}</nav>;
 }

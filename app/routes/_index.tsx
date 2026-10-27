@@ -2,7 +2,6 @@ import type { MetaFunction } from "@remix-run/node";
 import { useSearchParams } from "@remix-run/react";
 import { BottomNav } from "~/components/BottomNav";
 import { HomeHeader } from "~/components/HomeHeader";
-import { PushLink } from "~/components/PushLink";
 import { AdBanner } from "~/components/ui";
 import { HomeSearchField } from "~/components/features/home/HomeSearchField";
 import { UpcomingTournaments } from "~/components/features/home/UpcomingTournaments";
@@ -37,9 +36,7 @@ export default function Index() {
         <UpcomingTournaments selectedMonth={selectedMonth} onSelectMonth={selectMonth} />
         <AdBanner />
         <Notices />
-        <div className="pb-4 text-center">
-          <PushLink to="/components" className="inline-flex min-h-11 items-center px-4 text-body text-neutral-subtext underline underline-offset-4">컴포넌트 보기</PushLink>
-        </div>
+
       </main>
       <BottomNav selectedMonth={selectedMonth} />
     </div>
